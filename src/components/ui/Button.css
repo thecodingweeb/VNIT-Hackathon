@@ -1,0 +1,121 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-normal) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out),
+    opacity var(--duration-fast) var(--ease-out);
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  min-width: 100px;
+  text-decoration: none;
+}
+
+/* ── Sizes ── */
+.btn--sm { padding: 7px 14px; font-size: var(--text-sm); min-width: 80px; }
+.btn--md { padding: 10px 20px; font-size: var(--text-base); }
+.btn--lg { padding: 13px 28px; font-size: var(--text-lg); }
+
+/* ── Primary ── */
+.btn--primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: var(--shadow-button-primary);
+}
+.btn--primary:hover:not(:disabled) {
+  background: var(--accent-bright);
+  box-shadow: var(--shadow-button-primary-hover);
+}
+/* Shine sweep */
+.btn--primary::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -60%;
+  width: 40%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.20), transparent);
+  transform: skewX(-20deg);
+  transition: none;
+}
+.btn--primary:hover:not(:disabled)::after {
+  animation: shimmer 0.5s ease-in-out;
+}
+
+/* ── Secondary ── */
+.btn--secondary {
+  background: rgba(255,255,255,0.05);
+  color: var(--fg-primary);
+  box-shadow: inset 0 0 0 1px var(--border-default);
+}
+.btn--secondary:hover:not(:disabled) {
+  background: rgba(255,255,255,0.08);
+  box-shadow: inset 0 0 0 1px var(--border-hover), 0 0 20px rgba(255,255,255,0.04);
+}
+
+/* ── Ghost ── */
+.btn--ghost {
+  background: transparent;
+  color: var(--fg-secondary);
+  min-width: 0;
+}
+.btn--ghost:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--fg-primary);
+}
+
+/* ── Danger ── */
+.btn--danger {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  box-shadow: inset 0 0 0 1px rgba(239,68,68,0.30);
+}
+.btn--danger:hover:not(:disabled) {
+  background: rgba(239,68,68,0.25);
+  box-shadow: inset 0 0 0 1px rgba(239,68,68,0.50);
+}
+
+/* ── Icon only ── */
+.btn--icon {
+  min-width: 44px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--fg-secondary);
+}
+.btn--icon:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--fg-primary);
+  transform: scale(1.05);
+}
+
+/* ── States ── */
+.btn:active:not(:disabled) { transform: scale(0.98); }
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Loading spinner ── */
+.btn-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+.btn--loading { pointer-events: none; }
+
+.btn-icon-left, .btn-icon-right { flex-shrink: 0; }

@@ -1,0 +1,164 @@
+/* ============================================================
+   TIGERWATCH — Deep Wilderness Design Tokens
+   Tiger Movement Intelligence System v1.0
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+  /* ── Background Scale ── */
+  --bg-deep:    #030304;
+  --bg-base:    #060607;
+  --bg-elevated:#0C0C0E;
+  --bg-card:    #101014;
+  --surface:    rgba(255,255,255,0.04);
+  --surface-hover: rgba(255,255,255,0.07);
+
+  /* ── Foreground ── */
+  --fg-primary:   #EDEDEF;
+  --fg-secondary: #9CA3AF;
+  --fg-muted:     rgba(255,255,255,0.35);
+
+  /* ── Accent — Tiger Eye Amber ── */
+  --accent:         #B8822E;
+  --accent-bright:  #D4993A;
+  --accent-glow:    rgba(184,130,46,0.25);
+  --accent-subtle:  rgba(184,130,46,0.08);
+  --accent-border:  rgba(184,130,46,0.30);
+
+  /* ── Forest Green ── */
+  --forest:         #1A4B2E;
+  --forest-glow:    rgba(26,75,46,0.30);
+
+  /* ── Borders ── */
+  --border-default: rgba(255,255,255,0.06);
+  --border-hover:   rgba(255,255,255,0.12);
+  --border-accent:  rgba(184,130,46,0.30);
+
+  /* ── Semantic Colors ── */
+  --color-success:      #22C55E;
+  --color-success-bg:   rgba(34,197,94,0.12);
+  --color-success-glow: rgba(34,197,94,0.20);
+
+  --color-warning:      #F59E0B;
+  --color-warning-bg:   rgba(245,158,11,0.12);
+  --color-warning-glow: rgba(245,158,11,0.20);
+
+  --color-danger:       #EF4444;
+  --color-danger-bg:    rgba(239,68,68,0.12);
+  --color-danger-glow:  rgba(228,68,68,0.20);
+
+  --color-info:         #3B82F6;
+  --color-info-bg:      rgba(59,130,246,0.12);
+  --color-info-glow:    rgba(59,130,246,0.20);
+
+  --color-absent:       #6B7280;
+  --color-absent-bg:    rgba(107,114,128,0.12);
+
+  /* ── Spacing Scale (4px base) ── */
+  --space-xs:   4px;
+  --space-sm:   8px;
+  --space-md:   12px;
+  --space-lg:   16px;
+  --space-xl:   24px;
+  --space-2xl:  32px;
+  --space-3xl:  48px;
+  --space-4xl:  64px;
+  --space-5xl:  96px;
+
+  /* ── Typography ── */
+  --font-sans:  'Inter', 'Geist Sans', system-ui, -apple-system, sans-serif;
+  --font-mono:  'JetBrains Mono', 'Fira Code', monospace;
+
+  --text-xs:    11px;
+  --text-sm:    12px;
+  --text-base:  14px;
+  --text-lg:    16px;
+  --text-xl:    18px;
+  --text-2xl:   24px;
+  --text-3xl:   30px;
+  --text-4xl:   36px;
+  --text-display: 48px;
+
+  /* ── Border Radius ── */
+  --radius-sm:  6px;
+  --radius-md:  8px;
+  --radius-lg:  12px;
+  --radius-xl:  16px;
+  --radius-2xl: 20px;
+  --radius-full:9999px;
+
+  /* ── Shadows ── */
+  --shadow-card:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 2px 20px rgba(0,0,0,0.30),
+    0 0 40px rgba(0,0,0,0.15);
+
+  --shadow-card-hover:
+    0 0 0 1px rgba(255,255,255,0.10),
+    0 4px 32px rgba(0,0,0,0.40),
+    0 0 60px rgba(184,130,46,0.06);
+
+  --shadow-button-primary:
+    0 0 0 1px rgba(184,130,46,0.50),
+    0 4px 12px rgba(184,130,46,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.15);
+
+  --shadow-button-primary-hover:
+    0 0 0 1px rgba(184,130,46,0.70),
+    0 6px 20px rgba(184,130,46,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.20);
+
+  --shadow-elevated:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 8px 40px rgba(0,0,0,0.50),
+    0 0 80px rgba(0,0,0,0.30);
+
+  /* ── Motion ── */
+  --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:       cubic-bezier(0.4, 0, 1, 1);
+  --ease-out:      ease-out;
+
+  --duration-fast:     150ms;
+  --duration-normal:   250ms;
+  --duration-slow:     400ms;
+  --duration-entrance: 600ms;
+  --duration-ambient:  10000ms;
+
+  /* ── Layout ── */
+  --sidebar-width:  260px;
+  --topbar-height:  56px;
+  --panel-width:    360px;
+  --max-content:    1440px;
+}
+
+/* ── Tiger Identity Color Palette (20 slots) ── */
+:root {
+  --tiger-1:  #FF8C30;
+  --tiger-2:  #3860FF;
+  --tiger-3:  #10B981;
+  --tiger-4:  #F04444;
+  --tiger-5:  #8B5CF6;
+  --tiger-6:  #0C4B90;
+  --tiger-7:  #41B8AC;
+  --tiger-8:  #F97316;
+  --tiger-9:  #4600F1;
+  --tiger-10: #84CC16;
+  --tiger-11: #06B6D4;
+  --tiger-12: #EC4899;
+  --tiger-13: #A855F7;
+  --tiger-14: #38BDF8;
+  --tiger-15: #F472B6;
+  --tiger-16: #4ADE80;
+  --tiger-17: #C084FC;
+  --tiger-18: #FBBF24;
+  --tiger-19: #34D399;
+  --tiger-20: #FB923C;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
