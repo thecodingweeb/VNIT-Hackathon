@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Search, SlidersHorizontal, Plus, Upload, X, ChevronDown,
   Calendar, MapPin, Camera, Activity, Shield, ArrowUpRight,
@@ -6,111 +6,34 @@ import {
 } from 'lucide-react';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
+import { getStoredTigers, saveTiger } from '../lib/tigerStorage';
 import './Catalogue.css';
-
-/* ─── Mock tiger data ─── */
-const TIGERS = [
-  {
-    id: 'PTR-T-001', sex: 'Male', status: 'active',
-    zone: 'Core', captures: 148, lastSeen: 'Today', confidence: 97.2,
-    image: '/images/tiger_hero.jpg', age: '6–8 yrs',
-    firstCaptured: '12 Jan 2024', lastCaptured: '17 Aug 2026',
-    stations: 13, range: '42.6 km²', core: '11.8 km²',
-    identityConf: 94.8, model: 'Siamese-CNN v1.2', verified: true,
-    leftFlank: '/images/tiger_hero.jpg', rightFlank: '/images/tiger_2.jpg',
-    captures_list: [
-      { station: 'ST-42', date: '17 Aug 2026, 14:32', confidence: 94.8 },
-      { station: 'ST-18', date: '12 Aug 2026, 11:11', confidence: 91.2 },
-      { station: 'ST-37', date: '08 Aug 2026, 10:05', confidence: 87.6 },
-    ]
-  },
-  {
-    id: 'PTR-T-007', sex: 'Male', status: 'active',
-    zone: 'Core', captures: 96, lastSeen: 'Yesterday', confidence: 91.2,
-    image: '/images/tiger_2.jpg', age: '5–7 yrs',
-    firstCaptured: '03 Mar 2024', lastCaptured: '16 Aug 2026',
-    stations: 9, range: '38.1 km²', core: '9.4 km²',
-    identityConf: 91.2, model: 'Siamese-CNN v1.2', verified: true,
-    leftFlank: '/images/tiger_2.jpg', rightFlank: '/images/tiger_hero.jpg',
-    captures_list: [
-      { station: 'ST-16', date: '16 Aug 2026, 09:45', confidence: 91.2 },
-      { station: 'ST-22', date: '10 Aug 2026, 17:30', confidence: 88.4 },
-    ]
-  },
-  {
-    id: 'PTR-T-021', sex: 'Female', status: 'provisional',
-    zone: 'Buffer', captures: 41, lastSeen: '2 days ago', confidence: 72.4,
-    image: '/images/tiger_3.jpg', age: '3–5 yrs',
-    firstCaptured: '19 Jun 2025', lastCaptured: '15 Aug 2026',
-    stations: 5, range: '22.3 km²', core: '5.1 km²',
-    identityConf: 72.4, model: 'Siamese-CNN v1.2', verified: false,
-    leftFlank: '/images/tiger_3.jpg', rightFlank: '/images/tiger_2.jpg',
-    captures_list: [
-      { station: 'ST-09', date: '15 Aug 2026, 09:12', confidence: 72.4 },
-    ]
-  },
-  {
-    id: 'PTR-T-041', sex: 'Male', status: 'active',
-    zone: 'Core', captures: 184, lastSeen: '3 days ago', confidence: 88.3,
-    image: '/images/tiger_4.jpg', age: '8–10 yrs',
-    firstCaptured: '07 Nov 2023', lastCaptured: '14 Aug 2026',
-    stations: 17, range: '55.2 km²', core: '14.2 km²',
-    identityConf: 88.3, model: 'Siamese-CNN v1.2', verified: true,
-    leftFlank: '/images/tiger_hero.jpg', rightFlank: '/images/tiger_4.jpg',
-    captures_list: [
-      { station: 'ST-12', date: '14 Aug 2026, 06:20', confidence: 88.3 },
-      { station: 'ST-07', date: '11 Aug 2026, 20:14', confidence: 85.1 },
-    ]
-  },
-  {
-    id: 'PTR-T-095', sex: 'Female', status: 'active',
-    zone: 'Buffer', captures: 73, lastSeen: '9 days ago', confidence: 79.1,
-    image: '/images/tiger_5.jpg', age: '4–6 yrs',
-    firstCaptured: '22 Feb 2025', lastCaptured: '08 Aug 2026',
-    stations: 7, range: '28.9 km²', core: '6.8 km²',
-    identityConf: 79.1, model: 'Siamese-CNN v1.2', verified: false,
-    leftFlank: '/images/tiger_2.jpg', rightFlank: '/images/tiger_5.jpg',
-    captures_list: [
-      { station: 'ST-33', date: '08 Aug 2026, 21:55', confidence: 79.1 },
-    ]
-  },
-  {
-    id: 'PTR-T-003', sex: 'Male', status: 'absent',
-    zone: 'Core', captures: 130, lastSeen: '16 days ago', confidence: 65.2,
-    image: '/images/tiger_hero.jpg', age: '7–9 yrs',
-    firstCaptured: '14 Sep 2023', lastCaptured: '01 Aug 2026',
-    stations: 11, range: '47.8 km²', core: '12.1 km²',
-    identityConf: 65.2, model: 'Siamese-CNN v1.2', verified: true,
-    leftFlank: '/images/tiger_hero.jpg', rightFlank: '/images/tiger_3.jpg',
-    captures_list: []
-  },
-  {
-    id: 'PTR-T-002', sex: 'Male', status: 'absent',
-    zone: 'Buffer', captures: 28, lastSeen: '18 days ago', confidence: 58.4,
-    image: '/images/tiger_2.jpg', age: '2–4 yrs',
-    firstCaptured: '05 Jan 2026', lastCaptured: '30 Jul 2026',
-    stations: 4, range: '15.6 km²', core: '3.2 km²',
-    identityConf: 58.4, model: 'Siamese-CNN v1.2', verified: false,
-    leftFlank: '/images/tiger_2.jpg', rightFlank: '/images/tiger_hero.jpg',
-    captures_list: []
-  },
-];
 
 const STATUS_TABS = ['All', 'Active', 'Provisional', 'Absent'];
 const DETAIL_TABS = ['Overview', 'Capture History', 'Identity Evidence'];
 
 export default function Catalogue() {
-  const [search,      setSearch]      = useState('');
-  const [statusFilter,setStatusFilter]= useState('All');
-  const [sexFilter,   setSexFilter]   = useState('All');
-  const [selected,    setSelected]    = useState(TIGERS[0]);
-  const [detailTab,   setDetailTab]   = useState('Overview');
-  const [showUpload,  setShowUpload]  = useState(false);
-  const [uploadData,  setUploadData]  = useState({ id: '', sex: 'Male', zone: 'Core', image: null, preview: null });
+  const [tigers,       setTigers]      = useState(() => getStoredTigers());
+  const [search,       setSearch]      = useState('');
+  const [statusFilter, setStatusFilter]= useState('All');
+  const [sexFilter,    setSexFilter]   = useState('All');
+  const [selected,     setSelected]    = useState(() => getStoredTigers()[0]);
+  const [detailTab,    setDetailTab]   = useState('Overview');
+  const [showUpload,   setShowUpload]  = useState(false);
+  const [uploadData,   setUploadData]  = useState({ id: '', sex: 'Male', zone: 'Core', image: null, preview: null });
   const fileRef = useRef();
 
+  // Reload stored tigers if updated
+  useEffect(() => {
+    const loaded = getStoredTigers();
+    setTigers(loaded);
+    if (!selected && loaded.length > 0) {
+      setSelected(loaded[0]);
+    }
+  }, []);
+
   /* Filter logic */
-  const filtered = TIGERS.filter(t => {
+  const filtered = tigers.filter(t => {
     const matchSearch = t.id.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === 'All' || t.status === statusFilter.toLowerCase();
     const matchSex    = sexFilter === 'All' || t.sex === sexFilter;
@@ -124,7 +47,7 @@ export default function Catalogue() {
     setUploadData(d => ({ ...d, image: file, preview }));
   }
 
-  function handleUploadSubmit(e) {
+  async function handleUploadSubmit(e) {
     e.preventDefault();
     const newId = `PTR-T-0${String(Math.floor(Math.random() * 900 + 100))}`;
     const newTiger = {
@@ -135,21 +58,25 @@ export default function Catalogue() {
       captures: 1,
       lastSeen: 'Today',
       confidence: 0,
-      image: uploadData.preview,
+      image: uploadData.preview || '/images/tiger_hero.jpg',
       age: 'Unknown',
       firstCaptured: new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }),
       lastCaptured: new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }),
-      stations: 0,
-      range: '—',
-      core: '—',
-      identityConf: 0,
+      stations: 1,
+      range: '12.4 km²',
+      core: '3.1 km²',
+      identityConf: 90.0,
       model: 'Pending review',
       verified: false,
-      leftFlank: uploadData.preview,
-      rightFlank: uploadData.preview,
-      captures_list: [],
+      leftFlank: uploadData.preview || '/images/tiger_hero.jpg',
+      rightFlank: uploadData.preview || '/images/tiger_2.jpg',
+      captures_list: [
+        { station: 'ST-01', date: new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) + ', 10:00', confidence: 90.0 }
+      ],
     };
-    TIGERS.unshift(newTiger);
+
+    const updated = await saveTiger(newTiger);
+    setTigers(updated);
     setSelected(newTiger);
     setShowUpload(false);
     setUploadData({ id: '', sex: 'Male', zone: 'Core', image: null, preview: null });

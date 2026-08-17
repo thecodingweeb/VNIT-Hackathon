@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
+import { getStoredTigers } from '../lib/tigerStorage';
 import './Reports.css';
 
 /* ══════════════════════════════════════════════════════════════════
@@ -287,6 +288,7 @@ const MOCK_STATIONS_LOG = [
 export default function Reports() {
   const [selectedTemplate, setSelectedTemplate] = useState('reserve-activity');
   const [dateRange, setDateRange] = useState('01 Aug - 17 Aug 2026');
+  const [allTigers, setAllTigers] = useState(() => getStoredTigers());
   const [selectedZone, setSelectedZone] = useState('All Zones');
   const [selectedTiger, setSelectedTiger] = useState('All Tigers');
   const [exporting, setExporting] = useState(false);
@@ -294,12 +296,13 @@ export default function Reports() {
   const [previewTab, setPreviewTab] = useState('web'); // 'web' | 'print-preview'
 
   // Filtered tiger list based on user selections
-  const filteredTigers = ALL_TIGERS_DATA.filter(t => {
+  const filteredTigers = (allTigers || []).filter(t => {
     const matchesTiger = selectedTiger === 'All Tigers' || t.id === selectedTiger;
+    const tZone = t.zone?.toLowerCase() || '';
     const matchesZone = selectedZone === 'All Zones' ||
-      (selectedZone === 'Core Zone Only' && t.zone === 'Core Zone') ||
-      (selectedZone === 'Buffer Zone Only' && t.zone === 'Buffer Zone') ||
-      (selectedZone === 'Village Perimeter' && t.zone === 'Buffer Zone');
+      (selectedZone === 'Core Zone Only' && tZone.includes('core')) ||
+      (selectedZone === 'Buffer Zone Only' && tZone.includes('buffer')) ||
+      (selectedZone === 'Village Perimeter' && tZone.includes('buffer'));
     return matchesTiger && matchesZone;
   });
 
@@ -495,8 +498,8 @@ export default function Reports() {
                 value={selectedTiger}
                 onChange={(e) => setSelectedTiger(e.target.value)}
               >
-                <option value="All Tigers">All Tigers ({ALL_TIGERS_DATA.length} Tracked)</option>
-                {ALL_TIGERS_DATA.map(t => (
+                <option value="All Tigers">All Tigers ({allTigers.length} Tracked)</option>
+                {allTigers.map(t => (
                   <option key={t.id} value={t.id}>{t.id} ({t.zone})</option>
                 ))}
               </select>
