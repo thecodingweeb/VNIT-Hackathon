@@ -3,103 +3,185 @@ import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext();
 
-const DEMO_OFFICERS = [
-  {
-    id: 'OFF-01',
-    name: 'Ranger Amit Sharma',
-    email: 'amit.sharma@forest.mp.gov.in',
-    role: 'Chief Wildlife Warden',
-    zone: 'Pench Core & Buffer',
-    avatar: 'AS',
-  },
-  {
-    id: 'OFF-02',
-    name: 'Dr. Priya Desai',
-    email: 'priya.desai@wii.gov.in',
-    role: 'Senior Biologist / Re-ID Specialist',
-    zone: 'Research & Monitoring Wing',
-    avatar: 'PD',
-  },
-  {
-    id: 'OFF-03',
-    name: 'Officer Rajesh Verma',
-    email: 'r.verma@forest.mp.gov.in',
-    role: 'Field Patrol Officer',
-    zone: 'Turia & Buffer Sectors',
-    avatar: 'RV',
-  }
-];
-
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('tigerwatch_user');
-    return saved ? JSON.parse(saved) : null;
-  });
-  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Helper to format user profile data
+  const formatUserProfile = async (supabaseUser) => {
+    if (!supabaseUser) return null;
+
+    let role = supabaseUser.user_metadata?.role || 'RANGE_OFFICER';
+    let fullName = supabaseUser.user_metadata?.full_name || supabaseUser.email.split('@')[0];
+
+    // Try fetching extended profile from Supabase profiles table
+    if (supabase) {
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role, full_name, username')
+          .eq('id', supabaseUser.id)
+          .maybeSingle();
+
+        if (profile) {
+          role = profile.role || role;
+          fullName = profile.full_name || fullName;
+        }
+      } catch (err) {
+        console.warn('Profile fetch warning:', err);
+      }
+    }
+
+    return {
+      id: supabaseUser.id,
+      email: supabaseUser.email,
+      name: fullName,
+      role: role.replace('_', ' '),
+      zone: 'Pench Tiger Reserve',
+      avatar: (fullName || supabaseUser.email).slice(0, 2).toUpperCase(),
+    };
+  };
 
   useEffect(() => {
-    // If user is stored in localStorage, maintain session
-    if (user) {
-      localStorage.setItem('tigerwatch_user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('tigerwatch_user');
-    }
-  }, [user]);
+    // 1. Check existing session on load
+    const initializeAuth = async () => {
+      setLoading(true);
+      if (supabase) {
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
+        if (session?.user) {
+          const profile = await formatUserProfile(session.user);
+          setUser(profile);
+        } else {
+          setUser(null);
+        }
+      } else {
+        const local = localStorage.getItem('tigerwatch_user');
+        if (local) setUser(JSON.parse(local));
+      }
+      setLoading(false);
+    };
 
-  // Login handler supporting both demo credentials & Supabase Auth
+    initializeAuth();
+
+    // 2. Listen to real-time auth state changes from Supabase
+    if (supabase) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        setSession(session);
+        if (session?.user) {
+          const profile = await formatUserProfile(session.user);
+          setUser(profile);
+          localStorage.setItem('tigerwatch_user', JSON.stringify(profile));
+        } else {
+          setUser(null);
+          localStorage.removeItem('tigerwatch_user');
+        }
+        setLoading(false);
+      });
+
+      return () => {
+        subscription?.unsubscribe();
+      };
+    }
+  }, []);
+
+  // Strict Login handler using Supabase Auth
   const login = async (email, password) => {
     setLoading(true);
+    if (!supabase) {
+      setLoading(false);
+      return { success: false, error: 'Database connection is not configured.' };
+    }
+
     try {
-      // 1. Try Supabase Auth if configured
-      if (supabase) {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-        if (!error && data?.user) {
-          const authUser = {
-            id: data.user.id,
-            email: data.user.email,
-            name: data.user.user_metadata?.full_name || email.split('@')[0],
-            role: 'Forest Officer',
-            zone: 'Pench Tiger Reserve',
-            avatar: email[0].toUpperCase()
-          };
-          setUser(authUser);
-          setLoading(false);
-          return { success: true };
-        }
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password.trim(),
+      });
+
+      if (error) {
+        setLoading(false);
+        return {
+          success: false,
+          error: error.message === 'Invalid login credentials'
+            ? 'Invalid email or password. Please check your credentials.'
+            : error.message
+        };
       }
 
-      // 2. Demo accounts / fallback login
-      const matchedOfficer = DEMO_OFFICERS.find(o => o.email.toLowerCase() === email.toLowerCase()) || {
-        id: 'OFF-04',
-        name: email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase()),
-        email,
-        role: 'Field Officer',
-        zone: 'Pench Tiger Reserve',
-        avatar: email.slice(0, 2).toUpperCase()
-      };
+      if (data?.user) {
+        const profile = await formatUserProfile(data.user);
+        setUser(profile);
+        setSession(data.session);
+        setLoading(false);
+        return { success: true, user: profile };
+      }
 
-      setUser(matchedOfficer);
+      setLoading(false);
+      return { success: false, error: 'Authentication failed.' };
+    } catch (err) {
+      setLoading(false);
+      return { success: false, error: err.message || 'An unexpected error occurred.' };
+    }
+  };
+
+  // Sign Up / Register new authorized officer
+  const register = async ({ email, password, fullName, role = 'RANGE_OFFICER' }) => {
+    setLoading(true);
+    if (!supabase) {
+      setLoading(false);
+      return { success: false, error: 'Database connection is not configured.' };
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: password.trim(),
+        options: {
+          data: {
+            full_name: fullName.trim(),
+            role: role,
+            username: email.split('@')[0],
+          }
+        }
+      });
+
+      if (error) {
+        setLoading(false);
+        return { success: false, error: error.message };
+      }
+
+      if (data?.user) {
+        const profile = await formatUserProfile(data.user);
+        setUser(profile);
+        setSession(data.session);
+        setLoading(false);
+        return { success: true, user: profile, session: data.session };
+      }
+
       setLoading(false);
       return { success: true };
     } catch (err) {
       setLoading(false);
-      return { success: false, error: err.message };
+      return { success: false, error: err.message || 'Registration failed.' };
     }
   };
 
+  // Sign Out
   const logout = async () => {
+    setLoading(true);
     if (supabase) {
       await supabase.auth.signOut().catch(() => {});
     }
     setUser(null);
+    setSession(null);
     localStorage.removeItem('tigerwatch_user');
+    setLoading(false);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading, demoOfficers: DEMO_OFFICERS }}>
+    <AuthContext.Provider value={{ user, session, login, register, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

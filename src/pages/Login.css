@@ -108,6 +108,43 @@
   gap: var(--space-xl);
 }
 
+/* Mode Switcher Tabs */
+.login-mode-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 4px;
+  gap: 4px;
+}
+
+.login-mode-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  color: var(--fg-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.login-mode-tab:hover {
+  color: var(--fg-primary);
+}
+
+.login-mode-tab--active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(184, 130, 46, 0.4);
+}
+
 .login-card-header {
   text-align: center;
   display: flex;
